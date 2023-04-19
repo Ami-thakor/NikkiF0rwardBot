@@ -17,6 +17,13 @@ async def start_message(_, M: Message):
 
 
 # to add new channel to collection
+@Client.on_message(filters.user(SUDO_USERS) & filters.command(['help']))
+async def add_message(a: Client, msg: Message):
+    await msg.reply_text("`/add` `/remove` `/listdel` `/view /list` `/info` `/id` `/wforward` `/wcopy` `/dforward` `/delall`")
+
+
+    
+# to add new channel to collection
 @Client.on_message(filters.user(SUDO_USERS) & filters.command(['add']))
 async def add_message(a: Client, msg: Message):
     await msg.reply_text("Select List to Add Your Channel", reply_markup=ADD_NEW_CHAT_BTN, quote=True)
