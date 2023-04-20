@@ -78,6 +78,7 @@ VIEW_CHANNELS_BUTTON = InlineKeyboardMarkup(
         [
             InlineKeyboardButton("DESI List", callback_data="view-desi"),
             InlineKeyboardButton("WEBx List", callback_data="view-webx"),
+            InlineKeyboardButton("Ignore List", callback_data="ignore_list")
         ],
         [InlineKeyboardButton("Cancel", callback_data="cancel")]
     ]
