@@ -11,22 +11,24 @@ from plugins.database import *
 from plugins.buttons import *
 
 SUDO_USERS = [5294965763,874964742,5144980226,839221827]
+SUDO_CHATS = [-1001810088016,-1001811598345,-1001641505860,-1001338936444,-1001614947962]
+
 @Client.on_message(filters.command(['start']))
 async def start_message(_, M: Message):
     await M.reply_text("Hlw Join @CrazeBots")
 
 
 # to add new channel to collection
-@Client.on_message(filters.user(SUDO_USERS) & filters.command(['help']))
-async def add_message(a: Client, msg: Message):
-    await msg.reply_text("`/add` `/remove` `/listdel` `/view /list` `/info` `/id` `/wforward` `/wcopy` `/dforward` `/delall`")
-
-
-    
-# to add new channel to collection
 @Client.on_message(filters.user(SUDO_USERS) & filters.command(['add']))
 async def add_message(a: Client, msg: Message):
     await msg.reply_text("Select List to Add Your Channel", reply_markup=ADD_NEW_CHAT_BTN, quote=True)
+
+# to help message
+@Client.on_message(filters.user(SUDO_USERS) & filters.command(['help']))
+async def help_message(a: Client, msg: Message):
+    await msg.reply_text("`/add` `/remove` `/listdel` `/view /list` `/info` `/id` `/wforward` `/wcopy` `/dforward` `/delall`")
+
+
 
 # to remove channel from collection
 @Client.on_message(filters.user(SUDO_USERS) & filters.command(['remove']))
@@ -70,7 +72,7 @@ async def id_message(_, msg: Message):
         await msg.reply_text(str(ex))
 
 
-@Client.on_message(filters.user(SUDO_USERS) & filters.command(['wforward']))
+@Client.on_message(filters.chat(SUDO_CHATS) & filters.command(['wforward']))
 async def wforward_message(_, msg: Message):
     try:
         if not msg.reply_to_message:
@@ -104,7 +106,8 @@ async def wforward_message(_, msg: Message):
             except:
                 FAILED_CHATS.append(chat_id)
 
-            text = f"{text}\n{SUCCESS}" + "\n".join(FAILED_CHATS)
+
+        text = f"{text}\n{SUCCESS}" + "\n".join(str(item) for item in FAILED_CHATS)
 
         await msg_dict_func(DELE_MSG_IDS, 'WEBX')
 
@@ -116,7 +119,7 @@ async def wforward_message(_, msg: Message):
 
 
 
-@Client.on_message(filters.user(SUDO_USERS) & filters.command(['wcopy']))
+@Client.on_message(filters.chat(SUDO_CHATS) & filters.command(['wcopy']))
 async def wcopy_message(_, msg: Message):
     try:
         if not msg.reply_to_message:
@@ -150,7 +153,7 @@ async def wcopy_message(_, msg: Message):
             except:
                 FAILED_CHATS.append(chat_id)
 
-            text = f"{text}\n{SUCCESS}" + "\n".join(FAILED_CHATS)
+        text = f"{text}\n{SUCCESS}" + "\n".join(str(item) for item in FAILED_CHATS)
 
         await msg_dict_func(DELE_MSG_IDS, 'WEBX')
 
@@ -163,7 +166,7 @@ async def wcopy_message(_, msg: Message):
 
 
 
-@Client.on_message(filters.user(SUDO_USERS) & filters.command(['dforward']))
+@Client.on_message(filters.chat(SUDO_CHATS) & filters.command(['dforward']))
 async def dforward_message(_, msg: Message):
     try:
         if not msg.reply_to_message:
@@ -197,7 +200,7 @@ async def dforward_message(_, msg: Message):
             except:
                 FAILED_CHATS.append(chat_id)
 
-            text = f"{text}\n{SUCCESS}" + "\n".join(FAILED_CHATS)
+        text = f"{text}\n{SUCCESS}" + "\n".join(str(item) for item in FAILED_CHATS)
 
         await msg_dict_func(DELE_MSG_IDS, 'DESIX')
 
