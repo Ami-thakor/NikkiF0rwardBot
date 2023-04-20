@@ -10,6 +10,20 @@ from plugins.dele import *
 
 
 # query to reset full list
+@Client.on_callback_query(filters.regex(r'^ignore_list$'))
+async def see_ignore_list(_, query: CallbackQuery):
+    msg = query.message
+    start_msg = await msg.reply_text("Getting")
+    try:
+       ignore_lis = await get_all_chat_info(ignore_col)
+       text = f"\n{len(ignore_lis)}\n" + "\n".join(str(item) for item in ignore_lis)
+       await start_msg.edit_text(text)
+    except:
+        pass
+    await msg.delete()
+
+
+# query to reset full list
 @Client.on_callback_query(filters.regex(r'^listdel'))
 async def dele_btn_for_desi(_, query: CallbackQuery):
     try:
@@ -56,6 +70,7 @@ async def add_new_channel_query(app: Client, query: CallbackQuery):
         elif cb_data == "ignore":
             coll = ignore_col
             await ms.edit_text(f"{channel_id} Channel added Successfully.")
+            await query.message.delete()
             return await add_ignore_id(channel_id)
 
         await add_channel_id(coll, channel_id, app)
@@ -136,6 +151,7 @@ async def dele_all_query(app: Client, query: CallbackQuery):
     try:
         file = "DESIX"
         msg = query.message.reply_to_message
+        start_msg = await msg.reply_text("Deleting the Messags")
     
         cb_data = query.data
         msg_id = int(msg.text.split('/delall ')[-1])
@@ -150,13 +166,23 @@ async def dele_all_query(app: Client, query: CallbackQuery):
         dele_dic = await showdata(file)
         suc_task = 0
         for i in dele_dic:
+            if suc_task % 20 == 0:
+                try:
+                    await start_msg.edit_text(f"In Progress Deleting:\nSuccess: {suc_task}")
+                except:
+                    pass
             try:
                 await app.delete_messages(i, dele_dic[i] + msg_id)
+                await asyncio.sleep(0.3)
                 suc_task += 1
-                print(suc_task, 'Deleted ✔️')
 
             except Exception as e:
                 print(e)
+
+        try:
+            await start_msg.edit_text(f'Sucesss Task : {suc_task} \nField Task :{len(dele_dic)-suc_task}')
+        except:
+            pass
         print(f'Sucesss Task : {suc_task} \nField Task :{len(dele_dic)-suc_task}')
     
     except Exception as ex:
