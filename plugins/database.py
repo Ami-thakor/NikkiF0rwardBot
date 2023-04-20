@@ -82,11 +82,20 @@ async def get_chat_info(channel_id):
 
 
 async def get_all_chat_info(category):
+    channel_info = []
+    count = 1
+    if category == ignore_col:
+      async for channel in category.find():
+        chat_id = channel["_id"]
+        chat_info = f"#{count} `{chat_id}`"
+        channel_info.append(chat_info)
+        count += 1
+      return channel_info
+
     try:
-        count = 1
         total_subs = 0
         text = 'You have {} channels:\n\n'
-        channel_info = []
+        
         async for channel in category.find():
             # print(channel)
             subs = channel["SUBS"]
@@ -101,8 +110,7 @@ async def get_all_chat_info(category):
         
         return text.format(count-1), channel_info, subs_text
 
-    except Exception as e:
-        print(f"Error retrieving channel info: {e}")
+    except:
         return "No Info Found"
 
 # Function to delete channel IDs from the list
