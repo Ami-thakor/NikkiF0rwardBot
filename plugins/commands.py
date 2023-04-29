@@ -84,7 +84,7 @@ async def wforward_message(_, msg: Message):
         FAILED_CHATS = []
 
         chat_ids = await get_all_channel_ids(web_col)
-        start_msg = await msg.reply_text("Forwarding Started")
+        start_msg = await msg.edit_text("Forwarding Started")
         IGNORE_IDS = await get_all_channel_ids(ignore_col)
 
         for chat_id in chat_ids:
@@ -131,7 +131,7 @@ async def wcopy_message(_, msg: Message):
         FAILED_CHATS = []
 
         chat_ids = await get_all_channel_ids(web_col)
-        start_msg = await msg.reply_text("Copying Started")
+        start_msg = await msg.edit_text("Copying Started")
         IGNORE_IDS = await get_all_channel_ids(ignore_col)
 
         for chat_id in chat_ids:
@@ -178,7 +178,7 @@ async def dforward_message(_, msg: Message):
         FAILED_CHATS = []
 
         chat_ids = await get_all_channel_ids(desi_col)
-        start_msg = await msg.reply_text("Forwarding Started")
+        start_msg = await msg.edit_text("Forwarding Started")
         IGNORE_IDS = await get_all_channel_ids(ignore_col)
 
         for chat_id in chat_ids:
