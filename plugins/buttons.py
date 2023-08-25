@@ -1,85 +1,31 @@
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
-# Define your inline keyboard
-DESI_DEL_LIST_BTN = InlineKeyboardMarkup(
-    [
-        [
-            InlineKeyboardButton("Yes", callback_data="yesdesidel"),
-            InlineKeyboardButton("No", callback_data="cancel")
-        ]
-    ]
-)
+# from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 
-# Define your inline keyboard
-WEBX_DEL_LIST_BTN = InlineKeyboardMarkup(
-    [
-        [
-            InlineKeyboardButton("Yes", callback_data="yeswebdel"),
-            InlineKeyboardButton("No", callback_data="cancel")
-        ]
-    ]
-)
+async def button_from_list(col_list: list, action='view'):
+    if len(col_list) == 0:
+        return None
+    Inline_list = []
+    row = []
 
+    for cat in col_list:
+        title = cat['title']
+        cat_id = cat["_id"]
+        ns = title.lower()
+        inline = InlineKeyboardButton(
+            f"{ns}", callback_data=f"{action}#{str(cat_id)}")
+        row.append(inline)
 
+        if len(row) == 3:
+            Inline_list.append(row)
+            row = []
 
-LIST_DELETE_BUTTON = InlineKeyboardMarkup(
-    [
-         [
-            InlineKeyboardButton("Desi All", callback_data="listdel#desi"),
-            InlineKeyboardButton("WEBx All", callback_data="listdel#webx"),
-        ],
-        [
-            InlineKeyboardButton("Cancel", callback_data="cancel")
-        ]
-    ]
-)
+    if row:  # Add any remaining buttons if not a multiple of 3
+        Inline_list.append(row)
 
+    # Add the "Cancel" button
+    cancel_button = InlineKeyboardButton("Cancel ❌", callback_data="cancel")
+    Inline_list.append([cancel_button])
 
-
-# Define your inline keyboard
-DELE_MSGS_BTN = InlineKeyboardMarkup(
-    [
-        [
-            InlineKeyboardButton("DESI-Delete", callback_data="delall#desi"),
-            InlineKeyboardButton("WEBx-Delete", callback_data="delall#webx"),
-        ],
-        [
-            InlineKeyboardButton("Cancel", callback_data="cancel")
-        ]
-    ]
-)
-
-
-ADD_NEW_CHAT_BTN = InlineKeyboardMarkup(
-    [
-        [
-            InlineKeyboardButton("DESI List", callback_data="add#desi"),
-            InlineKeyboardButton("WEBx List", callback_data="add#webx"),
-            InlineKeyboardButton("Ignore List", callback_data="add#ignore")
-            
-        ],[InlineKeyboardButton("Cancel", callback_data="cancel")]
-    ]
-)
-
-REMOVE_CHAT_BTN = InlineKeyboardMarkup(
-    [
-        [
-            InlineKeyboardButton("DESI List", callback_data="remove-desi"),
-            InlineKeyboardButton("WEBx List", callback_data="remove-webx"),
-            InlineKeyboardButton("Ignore List", callback_data="remove-ignore")
-        ],[InlineKeyboardButton("Cancel", callback_data="cancel")]
-    ]
-)
-
-
-VIEW_CHANNELS_BUTTON = InlineKeyboardMarkup(
-    [
-        [
-            InlineKeyboardButton("DESI List", callback_data="view-desi"),
-            InlineKeyboardButton("WEBx List", callback_data="view-webx"),
-            InlineKeyboardButton("Ignore List", callback_data="ignore_list")
-        ],
-        [InlineKeyboardButton("Cancel", callback_data="cancel")]
-    ]
-)
+    return InlineKeyboardMarkup(Inline_list)

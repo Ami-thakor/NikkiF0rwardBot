@@ -2,19 +2,18 @@
 # pylint: disable=missing-docstring,unused-import,invalid-name,wildcard-import,unused-wildcard-import,broad-exception-caught,bare-except,unused-argument
 
 import os
-from pyrogram import Client, filters
-from pyrogram.types import Message
+from pyrogram import Client
 
 
 BOT_TOKEN = os.environ.get('BOT_TOKEN',
-                           '5433944229:AAEozdASBePihkFEy6gbbtnKkKDv8hyOBRg')
+                           '6183397097:AAETlxAm8ZTFSCHZzMCAI9aECwBURe455Fk')
 
 plugins = dict(root="plugins")
 API_ID = 16514976
 API_HASH = '40bd8634b3836468bb2fb7eafe39d81a'
 
 
-app = Client("channelbot",
+app = Client("Forwardbot",
              api_id=API_ID,
              api_hash=API_HASH,
              bot_token=BOT_TOKEN,
@@ -23,6 +22,6 @@ app = Client("channelbot",
 
 
 
-os.system("clear")
-print("Starting...")
+# os.system("clear")
+print("Started :)")
 app.run()

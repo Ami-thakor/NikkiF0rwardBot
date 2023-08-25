@@ -8,12 +8,96 @@ import motor.motor_asyncio
 # Set up MongoDB client and database
 URL = "mongodb+srv://admin:rahul@mydatabase.zu1yt8m.mongodb.net/?retryWrites=true&w=majority"
 client = motor.motor_asyncio.AsyncIOMotorClient(URL)
-db = client["telegram_channels"]
+db = client["slvofwotvksv_bot"]
 
-web_col = db["web_channel_ids"]
-desi_col = db["desi_channel_ids"]
-ignore_col = db["ignore_ids"]
+
+categories = db["categories"]
 all_col = db["channel_ids"]
+
+
+async def get_all_cats():
+    cats_names = []
+    async for cat in categories.find():
+        cat_name = cat["title"]
+        cat_id = cat["_id"]
+        dictionary = {"_id": cat_id, "title": cat_name}
+
+        cats_names.append(dictionary)
+
+    return cats_names
+
+
+async def update_by_id(cat_id, channel_id):
+    try:
+        data = await show_category(cat_id)
+        chats_list = data["chat_ids"]
+        chats_list.append(int(channel_id))
+
+        update_operation = {
+            "$set": {
+                "chat_ids": chats_list}}
+
+        await categories.update_one({"_id": int(cat_id)}, update_operation)
+    except:
+        pass
+
+
+async def remove_by_id(cat_id, channel_id):
+    try:
+        data = await show_category(cat_id)
+        chats_list = data["chat_ids"]
+        chats_list.remove(int(channel_id))
+
+        update_operation = {
+            "$set": {
+                "chat_ids": chats_list}}
+
+        await categories.update_one({"_id": int(cat_id)}, update_operation)
+    except:
+        pass
+
+
+async def is_more_than_n_collections(n=9):
+    try:
+        # List the collection names in the database
+        collection_names = await db.list_collection_names()
+
+        # Check if there are more than n collections
+        return len(collection_names) > n
+
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return False
+
+
+async def get_collection_names():
+    # List the collection names in the database
+    collection_names = await db.list_collection_names()
+
+    return collection_names
+
+
+async def make_new_collect(title):
+    new_category = db[title]
+    return title
+
+
+async def add_category(channel_id, title):
+    channel_id = int(channel_id)
+    new_channel = {
+        "_id": channel_id,
+        "title": title,
+        "chat_ids": []}
+    try:
+        await categories.insert_one(new_channel)
+    except:
+        pass
+
+
+async def show_category(channel_id):
+    query = {"_id": int(channel_id)}
+    result = await categories.find_one(query)
+    return result
 
 
 async def add_ignore_id(channel_id):
@@ -21,7 +105,7 @@ async def add_ignore_id(channel_id):
     new_channel = {
         "_id": channel_id}
     try:
-        await ignore_col.insert_one(new_channel)
+        await categories.insert_one(new_channel)
     except:
         pass
 
@@ -55,6 +139,8 @@ async def add_channel_id(category, channel_id, app):
         pass
 
 # Function to retrieve channel info
+
+
 async def get_chat_info(channel_id):
     try:
         channel_id = int(channel_id)
@@ -85,17 +171,17 @@ async def get_all_chat_info(category):
     channel_info = []
     count = 1
     if category == ignore_col:
-      async for channel in category.find():
-        chat_id = channel["_id"]
-        chat_info = f"#{count} `{chat_id}`"
-        channel_info.append(chat_info)
-        count += 1
-      return channel_info
+        async for channel in category.find():
+            chat_id = channel["_id"]
+            chat_info = f"#{count} `{chat_id}`"
+            channel_info.append(chat_info)
+            count += 1
+        return channel_info
 
     try:
         total_subs = 0
         text = 'You have {} channels:\n\n'
-        
+
         async for channel in category.find():
             # print(channel)
             subs = channel["SUBS"]
@@ -107,7 +193,6 @@ async def get_all_chat_info(category):
 
         subs_text = f"Total Channels Subs: `{total_subs}`"
 
-        
         return text.format(count-1), channel_info, subs_text
 
     except:
@@ -125,13 +210,7 @@ async def delete_channel_id(category, channel_id):
 
 async def get_all_channel_ids(category):
     channel_ids = []
+
     async for channel in category.find():
         channel_ids.append(channel["_id"])
     return channel_ids
-
-# # Example usage:
-# async def main():
-#     # Call the asynchronous functions here
-
-# loop = asyncio.get_event_loop()
-# loop.run_until_complete(main())

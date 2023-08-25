@@ -1,56 +1,11 @@
 #!/usr/bin/env python3
 # pylint: disable=missing-docstring,unused-import,invalid-name,wildcard-import,unused-wildcard-import,broad-exception-caught,bare-except,unused-argument,import-error,undefined-variable
 
-import os
+import random
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
 from plugins.database import *
-from plugins.helpers import split_list
 from plugins.dele import *
-
-
-# query to reset full list
-@Client.on_callback_query(filters.regex(r'^ignore_list$'))
-async def see_ignore_list(_, query: CallbackQuery):
-    msg = query.message
-    start_msg = await msg.reply_text("Getting")
-    try:
-       ignore_lis = await get_all_chat_info(ignore_col)
-       text = f"\n{len(ignore_lis)}\n" + "\n".join(str(item) for item in ignore_lis)
-       await start_msg.edit_text(text)
-    except:
-        pass
-    await msg.delete()
-
-
-# query to reset full list
-@Client.on_callback_query(filters.regex(r'^listdel'))
-async def dele_btn_for_desi(_, query: CallbackQuery):
-    try:
-        msg = query.message
-        coll = desi_col
-    
-        cb_data = query.data.split("#")[-1]
-
-        if cb_data == "webx":
-            coll = web_col
-
-        await msg.delete()
-        ms = await msg.reply_text("Deleting ALL Channels")
-        num = 1
-        DESI_CHANNELS = await get_all_channel_ids(coll)
-        for channel_id in DESI_CHANNELS:
-            try:
-                await delete_channel_id(coll, channel_id)
-                await ms.edit_text(f"{channel_id} Channel deleted Successfully index {num}.")
-                num += 1
-                await asyncio.sleep(0.5)
-            except:
-                pass
-        await ms.edit_text("Task Completed")
-    except Exception as ex:
-        await query.message.reply_text(str(ex))
-
 
 
 # query for add chat to particular list
@@ -58,137 +13,127 @@ async def dele_btn_for_desi(_, query: CallbackQuery):
 async def add_new_channel_query(app: Client, query: CallbackQuery):
     try:
         msg = query.message.reply_to_message
-        coll = desi_col
+        cat_id = query.data.split("#")[1]
+
         channel_id = msg.text.split("/add ")[1]
-        ms = await msg.reply_text(f"Adding `{channel_id}`")
-    
-        cb_data = query.data.split("#")[-1]
+        await update_by_id(cat_id, channel_id)
 
-        if cb_data == "webx":
-            coll = web_col
+        ms = await msg.reply_text(f"Added `{channel_id}`")
 
-        elif cb_data == "ignore":
-            coll = ignore_col
-            await ms.edit_text(f"{channel_id} Channel added Successfully.")
-            await query.message.delete()
-            return await add_ignore_id(channel_id)
-
-        await add_channel_id(coll, channel_id, app)
-        await ms.edit_text(f"{channel_id} Channel added Successfully.")
     except Exception as ex:
         await query.message.reply_text(str(ex))
 
-    await query.message.delete()
+    finally:
+        await query.message.delete()
 
-# query for remove chat from particular list
+
+# query for add chat to particular list
+@Client.on_callback_query(filters.regex(r'^delete'))
+async def sure_delete_category(app: Client, query: CallbackQuery):
+    button = []
+    try:
+        cat_id = query.data.split("#")[1]
+        
+        # sure_button = # Add the "Cancel" button
+        sure_button = InlineKeyboardButton(
+            "Sure ❌", callback_data=f"sure#{str(cat_id)}")
+        cancel_button = InlineKeyboardButton(
+            "Cancel ✔️", callback_data="cancel")
+
+        cancel_button2 = InlineKeyboardButton(
+            "Don't delete ✅", callback_data="cancel")
+
+        # Create a list of buttons
+        button = [[sure_button], [cancel_button], [cancel_button2]]
+
+        # Shuffle the list to randomize the order
+        random.shuffle(button)
+
+        sure = InlineKeyboardMarkup(button)
+        await query.message.edit_text("Are you Sure and want delete this category.", reply_markup=sure)
+    except:
+        pass
+
+REPORT_MAN = 1286693857
+# query for add chat to particular list
+@Client.on_callback_query(filters.regex(r'^sure'))
+async def delete_category(app: Client, query: CallbackQuery):
+    try:
+        msg = query.message.reply_to_message
+        cat_id = query.data.split("#")[1]
+        result = await show_category(cat_id)
+        name = result['title']
+        data = await show_category(cat_id)
+
+        basic_info = f"Category Name: {data['title']}\nSource Channel ID: {data['_id']}\n"
+
+        text = f"{basic_info}\nTotal CHannels: {len(data['chat_ids'])}\n" + "\n".join(str(item)
+                                                                                      for item in data['chat_ids'])
+        with open('report.txt', 'w', encoding='utf-8') as file:
+            file.write(text)
+        user = query.from_user.id
+
+        try:
+            await app.send_document(user, "report.txt")
+        except:
+            pass
+
+        await delete_channel_id(categories, cat_id)
+
+        ms = await msg.reply_text(f"Deleted `{name}` category.")
+
+    except Exception as ex:
+        await query.message.reply_text(str(ex))
+
+    finally:
+        await query.message.delete()
+
+
+# query for add chat to particular list
+
+
 @Client.on_callback_query(filters.regex(r'^remove'))
 async def remove_channel_query(app: Client, query: CallbackQuery):
     try:
         msg = query.message.reply_to_message
-        coll = desi_col
+        cat_id = query.data.split("#")[1]
+
         channel_id = msg.text.split("/remove ")[1]
-        ms = await msg.reply_text(f"Removing `{channel_id}`")
-    
-        cb_data = query.data.split("-")[-1]
+        await remove_by_id(cat_id, channel_id)
 
-        if cb_data == "webx":
-            coll = web_col
+        ms = await msg.reply_text(f"Removed `{channel_id}`")
 
-        elif cb_data == "ignore":
-            coll = ignore_col
-            await ms.edit_text(f"{channel_id} Channel Removed Successfully.")
-            return await add_ignore_id(channel_id)
-
-        await delete_channel_id(coll, channel_id)
-        await ms.edit_text(f"{channel_id} Channel Removed Successfully.")
     except Exception as ex:
         await query.message.reply_text(str(ex))
 
-    await query.message.delete()
+    finally:
+        await query.message.delete()
 
-# query for view all channels as list and subs
+
 @Client.on_callback_query(filters.regex(r'^view'))
 async def views_channel_query(app: Client, query: CallbackQuery):
     try:
-        M = query.message
-        coll = desi_col
-    
-        cb_data = query.data.split("-")[-1]
+        cat_id = query.data.split("#")[1]
+        data = await show_category(cat_id)
 
-        if cb_data == "webx":
-            coll = web_col
+        basic_info = f"Category Name: {data['title']}\nSource Channel ID: {data['_id']}\n"
 
-        total_channels_text, info_list, total_subs_text = await get_all_chat_info(coll)
-        text = total_channels_text + '\n'.join(info_list) + '\n' + total_subs_text
-        result = split_list(info_list)
-        await M.delete()
-        if len(result) == 1:
-            pass
-        elif len(result) == 2:
-            text1 = total_channels_text + "\n".join(result[0])
-            text2 = '\n'.join(result[1]) + '\n' + total_subs_text
-            await M.reply_text(text1)
-            return await M.reply_text(text2)
+        text = f"{basic_info}\nTotal CHannels: {len(data['chat_ids'])}\n" + "\n".join(str(item)
+                                                                                      for item in data['chat_ids'])
+        with open('report.txt', 'w', encoding='utf-8') as file:
+            file.write(text)
 
-        elif len(result) == 3:
-            text1 = total_channels_text + "\n".join(result[0])
-            text2 = '\n'.join(result[1])
-            text3 = '\n'.join(result[2]) + '\n' + total_subs_text
-            await M.reply_text(text1)
-            await M.reply_text(text2)
-            return await M.reply_text(text3)
-
-        await M.reply_text(text)
-    except Exception as ex:
-        await query.message.reply_text(str(ex))
-    
-    
-
-
-# query for delete old messages 
-@Client.on_callback_query(filters.regex(r'^delall'))
-async def dele_all_query(app: Client, query: CallbackQuery):
-    try:
-        file = "DESIX"
-        msg = query.message.reply_to_message
-        start_msg = await msg.reply_text("Deleting the Messags")
-    
-        cb_data = query.data
-        msg_id = int(msg.text.split('/delall ')[-1])
-
-        list_name = cb_data.split("#")[1]
-
-        if list_name == "webx":
-            file = "WEBX"
-
-        if not os.path.exists(f"{file}-DELEMSGs.dat"):
-            return
-        dele_dic = await showdata(file)
-        suc_task = 0
-        for i in dele_dic:
-            if suc_task % 20 == 0:
-                try:
-                    await start_msg.edit_text(f"In Progress Deleting:\nSuccess: {suc_task}")
-                except:
-                    pass
-            try:
-                await app.delete_messages(i, dele_dic[i] + msg_id)
-                await asyncio.sleep(0.3)
-                suc_task += 1
-
-            except Exception as e:
-                print(e)
+        user = query.from_user.id
 
         try:
-            await start_msg.edit_text(f'Sucesss Task : {suc_task} \nField Task :{len(dele_dic)-suc_task}')
+            await app.send_document(user, "report.txt")
         except:
             pass
-        print(f'Sucesss Task : {suc_task} \nField Task :{len(dele_dic)-suc_task}')
-    
+
     except Exception as ex:
         await query.message.reply_text(str(ex))
-
-    await query.message.delete()
+    finally:
+        await query.message.delete()
 
 
 @Client.on_callback_query(filters.regex(r'^cancel$'))
