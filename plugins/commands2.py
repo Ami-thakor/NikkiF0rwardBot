@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # pylint: disable=missing-docstring,unused-import,invalid-name,wildcard-import,unused-wildcard-import,broad-exception-caught,bare-except,unused-argument,import-error
-
+import asyncio
 from pyrogram import Client, filters
 from pyrogram.types import Message
 
@@ -87,6 +87,7 @@ async def delete_category(app: Client, msg: Message):
 @Client.on_message(filters.channel & filters.user(SUDO_USERS))
 async def Handler_All_Channels(app: Client, msg: Message):
     curr_id = msg.chat.id
+    await asyncio.sleep(2)
     result = await show_category(curr_id)
     if not result:
         return
