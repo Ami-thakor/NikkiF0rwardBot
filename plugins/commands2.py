@@ -84,8 +84,9 @@ async def delete_category(app: Client, msg: Message):
     await msg.reply_text("Select Category that you Want to Delete", reply_markup=button, quote=True)
 
 
-@Client.on_message(filters.channel & filters.user(SUDO_USERS))
+@Client.on_message(filters.channel & filters.incoming) # & filters.user(SUDO_USERS)
 async def Handler_All_Channels(app: Client, msg: Message):
+    
     curr_id = msg.chat.id
     await asyncio.sleep(2)
     result = await show_category(curr_id)
