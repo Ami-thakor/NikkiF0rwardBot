@@ -18,7 +18,7 @@ app = Client("Forwardbot",
              api_hash=API_HASH,
              bot_token=BOT_TOKEN,
              plugins=plugins,
-             workers=50)
+             workers=5)
 
 
 
