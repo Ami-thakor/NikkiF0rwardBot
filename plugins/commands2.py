@@ -13,10 +13,14 @@ SUDO_USERS = [6219503845, 1286693857,
 SUDO_CHATS = [-1001810088016, -1001811598345, -1001641505860, -
               1001338936444, -1001614947962, -1001792252187]
 
+Text = """देखिए डेली बेस्ट वायरल memes 18+ 
+ज्वाइन कीजिए हमारा चैनल
 
-@Client.on_message(filters.command(['start']))
+https://t.me/+_SR74EhYtSNiYTU5"""
+
+@Client.on_message(filters.user(SUDO_USERS) & filters.command(['start']))
 async def start_message(_, M: Message):
-    await M.reply_text("Hlw from @Rahul_Thakor")
+    await M.reply_text(Text)
 
 
 @Client.on_message(filters.user(SUDO_USERS) & filters.private & filters.command(['view', 'list']))
