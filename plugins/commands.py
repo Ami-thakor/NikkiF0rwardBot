@@ -1,217 +1,138 @@
-# #!/usr/bin/env python3
-# # pylint: disable=missing-docstring,unused-import,invalid-name,wildcard-import,unused-wildcard-import,broad-exception-caught,bare-except,unused-argument,import-error
+#!/usr/bin/env python3
+# pylint: disable=missing-docstring,unused-import,invalid-name,wildcard-import,unused-wildcard-import,broad-exception-caught,bare-except,unused-argument,import-error
+import asyncio
+from pyrogram import Client, filters
+from pyrogram.types import Message
 
-# import os
-# from pyrogram import Client, filters
-# from pyrogram.types import Message
-# from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from plugins.dele import *
+from plugins.database import *
+from plugins.buttons import *
 
-# from plugins.dele import *
-# from plugins.database import *
-# from plugins.buttons import *
-
-# SUDO_USERS = [5294965763, 874964742, 5144980226, 839221827]
-# SUDO_CHATS = [-1001810088016, -1001811598345, -1001641505860, -
-#               1001338936444, -1001614947962, -1001792252187]
+SUDO_USERS = [6198910870, 6298547816, 6379854466,
+              6308864158, 5294965763, 874964742]
 
 
-# @Client.on_message(filters.command(['start']))
-# async def start_message(_, M: Message):
-#     await M.reply_text("Hlw from @Rahul_Thakor")
+START_TEXT = "Hlw am Auto Forward Bot"
+@Client.on_message(filters.user(SUDO_USERS) & filters.command(['start']))
+async def start_message(_, M: Message):
+    await M.reply_text(START_TEXT)
 
 
-# # to add new channel to collection
-# @Client.on_message(filters.user(SUDO_USERS) & filters.command(['add']))
-# async def add_message(_, msg: Message):
-#     await msg.reply_text("Select List to Add Your Channel", reply_markup=ADD_NEW_CHAT_BTN, quote=True)
-
-# # to help message
-
-
-# @Client.on_message(filters.user(SUDO_USERS) & filters.command(['help']))
-# async def help_message(_, msg: Message):
-#     await msg.reply_text("`/add` `/remove` `/listdel` `/view /list` `/info` `/id` `/wforward` `/wcopy` `/dforward` `/delall`")
-
-
-# # to remove channel from collection
-# @Client.on_message(filters.user(SUDO_USERS) & filters.command(['remove']))
-# async def rem_message(_, msg: Message):
-#     await msg.reply_text("Select List to Remove Your Channel", reply_markup=REMOVE_CHAT_BTN, quote=True)
+@Client.on_message(filters.user(SUDO_USERS) & filters.private & filters.command(['view', 'list']))
+async def list_message(_, msg: Message):
+    try:
+        col_list = await get_all_cats()
+        button = await button_from_list(col_list, 'view')
+        if not button:
+            return await msg.reply_text("Please first add at least one category then try again.")
+        await msg.reply_text("Which List Want to See", reply_markup=button, quote=True)
+    except:
+        pass
 
 
-# # to delete all channels from collection
-# @Client.on_message(filters.user(SUDO_USERS) & filters.command(['listdel']))
-# async def listdel_message(_, msg: Message):
-#     await msg.reply_text("Select List to Delete", reply_markup=LIST_DELETE_BUTTON)
+@Client.on_message(filters.command('category') & filters.reply & filters.user(SUDO_USERS))
+async def add_new_category(app: Client, msg: Message):
+    try:
+        text = msg.text
+        _, name = text.split("/category ")
+        if len(name) > 27:
+            return await msg.reply_text("Please try short name for category (5-28 letters)")
 
-# # view all channels from lists
+        if len(name) < 5:
+            return await msg.reply_text("Please try long name for category (5-28 letters)")
+        cats = await get_all_channel_ids(categories)
+        if len(cats) > 9:
+            return await msg.reply_text("Maximum limit 9 reached delete any then try again.")
 
+        try:
+            if msg.reply_to_message.forward_from_chat:
+                chat_id = str(msg.reply_to_message.forward_from_chat.id)
+                await add_category(chat_id, name)
+                await msg.reply_text("This category has been added, check /list to see. what the f#uck")
 
-# @Client.on_message(filters.user(SUDO_USERS) & filters.private & filters.command(['view', 'list']))
-# async def list_message(_, msg: Message):
-#     await msg.reply_text("Which List Want to See", reply_markup=VIEW_CHANNELS_BUTTON)
-
-
-# @Client.on_message(filters.user(SUDO_USERS) & filters.command(['info']))
-# async def info_message(_, msg: Message):
-#     try:
-#         chat_id = msg.text.split("/info ")[-1]
-#         output = await get_chat_info(chat_id)
-#         await msg.reply_text(output)
-#     except Exception as ex:
-#         await msg.reply_text(str(ex))
-
-
-# @Client.on_message(filters.user(SUDO_USERS) & filters.command(['id']))
-# async def id_message(_, msg: Message):
-#     chat_id = ''
-#     try:
-#         if msg.reply_to_message:
-#             if msg.reply_to_message.forward_from_chat:
-#                 chat_id = str(msg.reply_to_message.forward_from_chat.id)
-#         userid = msg.from_user.id
-#         text = f"UserID: `{userid}`\nChatID: `{chat_id}`"
-
-#         await msg.reply_text(text)
-#     except Exception as ex:
-#         await msg.reply_text(str(ex))
+        except Exception as ex:
+            await msg.reply_text(str(ex))
+    except:
+        pass
 
 
-# @Client.on_message(filters.chat(SUDO_CHATS) & filters.command(['wforward']))
-# async def wforward_message(_, msg: Message):
-#     try:
-#         if not msg.reply_to_message:
-#             return await msg.reply_text(msg.text)
-
-#         text = "Finished"
-#         DELE_MSG_IDS = {}
-#         SUCCESS = 1
-#         FAILED_CHATS = []
-
-#         chat_ids = await get_all_channel_ids(web_col)
-#         start_msg = await msg.edit_text("Forwarding Started")
-#         IGNORE_IDS = await get_all_channel_ids(ignore_col)
-
-#         for chat_id in chat_ids:
-#             if chat_id in IGNORE_IDS:
-#                 continue
-#             if SUCCESS % 20 == 0:
-#                 try:
-#                     await start_msg.edit_text(f"In Progress:\nSuccess: {SUCCESS}")
-#                 except:
-#                     pass
-#             try:
-#                 sent_msg = await msg.reply_to_message.forward(chat_id, disable_notification=True)
-#                 ch_id = sent_msg.chat.id
-#                 m_id = sent_msg.id
-#                 DELE_MSG_IDS[ch_id] = m_id
-#                 SUCCESS += 1
-#                 await asyncio.sleep(0.2)
-
-#             except:
-#                 FAILED_CHATS.append(chat_id)
-
-#         text = f"{text}\n{SUCCESS}" + \
-#             "\n".join(str(item) for item in FAILED_CHATS)
-
-#         await msg_dict_func(DELE_MSG_IDS, 'WEBX')
-
-#         await start_msg.edit_text(text)
-
-#     except Exception as ex:
-#         await msg.reply_text(str(ex))
+ADD_PATTERN = r"^/add\s-?\d+$"
+REMOVE_PATTERN = r"^/remove\s-?\d+$"
 
 
-# @Client.on_message(filters.chat(SUDO_CHATS) & filters.command(['wcopy']))
-# async def wcopy_message(_, msg: Message):
-#     try:
-#         if not msg.reply_to_message:
-#             return await msg.reply_text(msg.text)
+@Client.on_message(filters.private & filters.user(SUDO_USERS) & filters.regex(ADD_PATTERN))
+async def adding_channel(app: Client, msg: Message):
+    try:
+        col_list = await get_all_cats()
+        button = await button_from_list(col_list, 'add')
+        if not button:
+            return await msg.reply_text("Please first add at least one category then try again.")
+        await msg.reply_text("Which List Want to Add this channel", reply_markup=button, quote=True)
+    except:
+        pass
 
-#         text = "Finished"
-#         DELE_MSG_IDS = {}
-#         SUCCESS = 1
-#         FAILED_CHATS = []
-
-#         chat_ids = await get_all_channel_ids(web_col)
-#         start_msg = await msg.edit_text("Copying Started")
-#         IGNORE_IDS = await get_all_channel_ids(ignore_col)
-
-#         for chat_id in chat_ids:
-#             if chat_id in IGNORE_IDS:
-#                 continue
-#             if SUCCESS % 20 == 0:
-#                 try:
-#                     await start_msg.edit_text(f"In Progress:\nSuccess: {SUCCESS}")
-#                 except:
-#                     pass
-#             try:
-#                 sent_msg = await msg.reply_to_message.copy(chat_id, disable_notification=True)
-#                 ch_id = sent_msg.chat.id
-#                 m_id = sent_msg.id
-#                 DELE_MSG_IDS[ch_id] = m_id
-#                 SUCCESS += 1
-#                 await asyncio.sleep(0.2)
-
-#             except:
-#                 FAILED_CHATS.append(chat_id)
-
-#         text = f"{text}\n{SUCCESS}" + \
-#             "\n".join(str(item) for item in FAILED_CHATS)
-
-#         await msg_dict_func(DELE_MSG_IDS, 'WEBX')
-
-#         await start_msg.edit_text(text)
-
-#     except Exception as ex:
-#         await msg.reply_text(str(ex))
+# /add -100812546978
 
 
-# @Client.on_message(filters.chat(SUDO_CHATS) & filters.command(['dforward']))
-# async def dforward_message(_, msg: Message):
-#     try:
-#         if not msg.reply_to_message:
-#             return await msg.reply_text(msg.text)
+@Client.on_message(filters.private & filters.user(SUDO_USERS) & filters.regex(REMOVE_PATTERN))
+async def remove_channel(app: Client, msg: Message):
+    try:
 
-#         text = "Finished"
-#         DELE_MSG_IDS = {}
-#         SUCCESS = 1
-#         FAILED_CHATS = []
-
-#         chat_ids = await get_all_channel_ids(desi_col)
-#         start_msg = await msg.edit_text("Forwarding Started")
-#         IGNORE_IDS = await get_all_channel_ids(ignore_col)
-
-#         for chat_id in chat_ids:
-#             if chat_id in IGNORE_IDS:
-#                 continue
-#             if SUCCESS % 20 == 0:
-#                 try:
-#                     await start_msg.edit_text(f"In Progress:\nSuccess: {SUCCESS}")
-#                 except:
-#                     pass
-#             try:
-#                 sent_msg = await msg.reply_to_message.forward(chat_id, disable_notification=True)
-#                 ch_id = sent_msg.chat.id
-#                 m_id = sent_msg.id
-#                 DELE_MSG_IDS[ch_id] = m_id
-#                 SUCCESS += 1
-#                 await asyncio.sleep(0.2)
-
-#             except:
-#                 FAILED_CHATS.append(chat_id)
-
-#         text = f"{text}\n{SUCCESS}" + \
-#             "\n".join(str(item) for item in FAILED_CHATS)
-
-#         await msg_dict_func(DELE_MSG_IDS, 'DESIX')
-
-#         await start_msg.edit_text(text)
-
-#     except Exception as ex:
-#         await msg.reply_text(str(ex))
+        col_list = await get_all_cats()
+        button = await button_from_list(col_list, 'remove')
+        if not button:
+            return await msg.reply_text("Please first add at least one category then try again.")
+        await msg.reply_text("Select List Want to Remove this channel", reply_markup=button, quote=True)
+    except:
+        pass
 
 
-# @Client.on_message(filters.user(SUDO_USERS) & filters.command(['delall']))
-# async def delete_last_msg(app, msg):
-#     await msg.reply_text("Choose From Below Lists", reply_markup=DELE_MSGS_BTN, quote=True)
+@Client.on_message(filters.private & filters.user(SUDO_USERS) & filters.command('delete'))
+async def delete_category(app: Client, msg: Message):
+    try:
+        col_list = await get_all_cats()
+        button = await button_from_list(col_list, 'delete')
+        if not button:
+            return await msg.reply_text("Please first add at least one category then try again.")
+        await msg.reply_text("Select Category that you Want to Delete", reply_markup=button, quote=True)
+    except:
+        pass
+
+
+# & filters.user(SUDO_USERS)
+@Client.on_message(filters.channel & filters.incoming)
+async def Handler_All_Channels(app: Client, msg: Message):
+    try:
+
+        curr_id = msg.chat.id
+        await asyncio.sleep(2)
+        result = await show_category(curr_id)
+        if not result:
+            return
+        # cat_id = result["_id"]
+        chats_list = result["chat_ids"]
+        if len(chats_list) == 0:
+            return
+        caption = None
+        failed = []
+        success = []
+        text = "Finished"
+
+        for chat in chats_list:
+            if msg.caption:
+                caption = msg.caption.html
+                try:
+                    await msg.copy(chat, caption=caption)
+                    success.append(chat)
+                except:
+                    failed.append(chat)
+
+            if msg.text:
+                try:
+                    await msg.copy(chat)
+                    success.append(chat)
+                except:
+                    failed.append(chat)
+
+    except:
+        pass

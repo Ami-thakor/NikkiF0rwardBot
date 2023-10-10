@@ -8,7 +8,7 @@ import motor.motor_asyncio
 # Set up MongoDB client and database
 URL = "mongodb+srv://admin:rahul@mydatabase.zu1yt8m.mongodb.net/?retryWrites=true&w=majority"
 client = motor.motor_asyncio.AsyncIOMotorClient(URL)
-db = client["slvofwotvksv_bot"]
+db = client["Kdviferforwrder_bot"]
 
 
 categories = db["categories"]

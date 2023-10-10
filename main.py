@@ -6,14 +6,14 @@ from pyrogram import Client
 
 
 BOT_TOKEN = os.environ.get('BOT_TOKEN',
-                           '6183397097:AAETlxAm8ZTFSCHZzMCAI9aECwBURe455Fk')
+                           '6429401646:AAEg5fapauCi2kauxgPGvArcu_Xip2_gGK4')
 
 plugins = dict(root="plugins")
 API_ID = 16514976
 API_HASH = '40bd8634b3836468bb2fb7eafe39d81a'
 
 
-app = Client("Forwardbot",
+app = Client("NikkiForwardbot",
              api_id=API_ID,
              api_hash=API_HASH,
              bot_token=BOT_TOKEN,
