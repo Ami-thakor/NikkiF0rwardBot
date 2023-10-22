@@ -8,8 +8,7 @@ from plugins.dele import *
 from plugins.database import *
 from plugins.buttons import *
 
-SUDO_USERS = [6198910870, 6298547816, 6379854466,
-              6308864158, 5294965763, 874964742]
+SUDO_USERS = [996067608,5823752650,5554037783,6306113224, 5294965763, 874964742]
 
 
 START_TEXT = "Hlw am Auto Forward Bot"
