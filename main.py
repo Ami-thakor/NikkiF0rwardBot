@@ -6,7 +6,7 @@ from pyrogram import Client
 
 
 BOT_TOKEN = os.environ.get('BOT_TOKEN',
-                           '6429401646:AAEg5fapauCi2kauxgPGvArcu_Xip2_gGK4')
+                           '6854850011:AAExtRKOYPz4QGfE3HnU0uucyesEgA_5mF8')
 
 plugins = dict(root="plugins")
 API_ID = 16514976
